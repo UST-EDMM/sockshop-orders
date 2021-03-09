@@ -1,19 +1,39 @@
 package works.weave.socks.orders.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.net.URI;
+import java.util.Objects;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties
 public class OrdersConfigurationProperties {
+
+    private final String shippingHostname;
+    private final String shippingPort;
+    private final String paymentHostname;
+    private final String paymentPort;
+
     private String domain = "";
 
+    public OrdersConfigurationProperties(String shippingHostname, String shippingPort, String paymentHostname, String paymentPort) {
+        this.shippingHostname = shippingHostname;
+        this.shippingPort = shippingPort;
+        this.paymentHostname = paymentHostname;
+        this.paymentPort = paymentPort;
+    }
+
     public URI getPaymentUri() {
-        return new ServiceUri(new Hostname("payment"), new Domain(domain), "/paymentAuth").toUri();
+        if (Objects.isNull(paymentHostname) || Objects.isNull(paymentPort)) {
+            return new ServiceUri(new Hostname("payment"), new Domain(domain), "/paymentAuth").toUri();
+        }
+        return new ServiceUri(new Hostname(paymentHostname + ":" + paymentPort), new Domain(""), "/paymentAuth").toUri();
     }
 
     public URI getShippingUri() {
-        return new ServiceUri(new Hostname("shipping"), new Domain(domain), "/shipping").toUri();
+        if (Objects.isNull(shippingHostname) || Objects.isNull(shippingPort)) {
+            return new ServiceUri(new Hostname("shipping"), new Domain(domain), "/shipping").toUri();
+        }
+        return new ServiceUri(new Hostname(shippingHostname + ":" + shippingPort), new Domain(""), "/shipping").toUri();
     }
 
     public void setDomain(String domain) {

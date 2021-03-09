@@ -97,10 +97,13 @@ public class OrdersController {
             }
 
             // Ship
+            LOG.info("Start shipping...");
             String customerId = parseId(customerFuture.get(timeout, TimeUnit.SECONDS).getId().getHref());
+            LOG.info("For customer: {}", customerId);
             Future<Shipment> shipmentFuture = asyncGetService.postResource(config.getShippingUri(), new Shipment
                     (customerId), new ParameterizedTypeReference<Shipment>() {
             });
+            LOG.info("Sent shipping request");
 
             CustomerOrder order = new CustomerOrder(
                     null,
@@ -112,10 +115,10 @@ public class OrdersController {
                     shipmentFuture.get(timeout, TimeUnit.SECONDS),
                     Calendar.getInstance().getTime(),
                     amount);
-            LOG.debug("Received data: " + order.toString());
+            LOG.info("Received data: " + order.toString());
 
             CustomerOrder savedOrder = customerOrderRepository.save(order);
-            LOG.debug("Saved order: " + savedOrder);
+            LOG.info("Saved order: " + savedOrder);
 
             return savedOrder;
         } catch (TimeoutException e) {
